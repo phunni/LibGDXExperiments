@@ -26,6 +26,7 @@ public class Box2DExperimentsSimpleImage extends InputAdapter implements Screen 
     public final static float VP_WIDTH = 800f * INV_SCALE;
     public final static float VP_HEIGHT = 480f * INV_SCALE;
 
+
     private static final String TAG = "Box2DExperimentsSimpleImage";
 
     private SpriteBatch batch;
@@ -51,7 +52,6 @@ public class Box2DExperimentsSimpleImage extends InputAdapter implements Screen 
         viewport = new ExtendViewport(VP_WIDTH, VP_HEIGHT, camera);
         camera.position.set(viewport.getCamera().position.x + VP_WIDTH * 0.5f,
                 viewport.getCamera().position.y + VP_HEIGHT * 0.5f, 0);
-        camera.update();
 
         world = new World(new Vector2(0, -9.8f), true);
         debugRenderer = new Box2DDebugRenderer();
@@ -105,9 +105,11 @@ public class Box2DExperimentsSimpleImage extends InputAdapter implements Screen 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         world.step(1f / 60f, 6, 4);
+
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         for (Box b : boxes) {
+            b.update();
             b.draw(batch);
         }
         batch.end();
