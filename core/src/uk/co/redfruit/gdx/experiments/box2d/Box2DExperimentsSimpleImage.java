@@ -1,23 +1,34 @@
 package uk.co.redfruit.gdx.experiments.box2d;
 
-import com.badlogic.gdx.*;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-public class Box2DExperimentsBasicScreen extends InputAdapter implements Screen  {
+/**
+ * Created by paul on 11/09/15.
+ */
+public class Box2DExperimentsSimpleImage extends InputAdapter implements Screen {
 
     public final static float SCALE = 32f;
-	public final static float INV_SCALE = 1f/SCALE;
-	public final static float VP_WIDTH = 800f * INV_SCALE;
-	public final static float VP_HEIGHT = 480f * INV_SCALE;
+    public final static float INV_SCALE = 1f/SCALE;
+    public final static float VP_WIDTH = 800f * INV_SCALE;
+    public final static float VP_HEIGHT = 480f * INV_SCALE;
 
-    private static final String TAG = "Box2DExperimentsBasicScreen";
+    private static final String TAG = "Box2DExperimentsSimpleImage";
 
+    private SpriteBatch batch;
     private OrthographicCamera camera;
     private Viewport viewport;
 
@@ -31,8 +42,11 @@ public class Box2DExperimentsBasicScreen extends InputAdapter implements Screen 
     private FixtureDef boxFixtureDef;
     private PolygonShape square;
 
-    public Box2DExperimentsBasicScreen() {
+    private Array<Box> boxes = new Array<Box>();
+
+    public Box2DExperimentsSimpleImage() {
         Gdx.input.setInputProcessor(this);
+        batch = new SpriteBatch();
         camera = new OrthographicCamera();
         viewport = new ExtendViewport(VP_WIDTH, VP_HEIGHT, camera);
         camera.position.set(viewport.getCamera().position.x + VP_WIDTH * 0.5f,
@@ -44,16 +58,18 @@ public class Box2DExperimentsBasicScreen extends InputAdapter implements Screen 
 
         createGround();
 
-        // Shape for square
-        square = new PolygonShape();
-        // 1 meter-sided square
-        square.setAsBox(0.5f, 0.5f);
 
         init(VP_WIDTH / 2, (float) (VP_HEIGHT - 0.25));
     }
 
     private void init(float x, float y) {
         boxBodyDef = getDynamicBodyDef();
+        Texture badlogic = new Texture(Gdx.files.internal("badlogic.jpg"));
+
+        // Shape for square
+        square = new PolygonShape();
+        // 1 meter-sided square
+        square.setAsBox(badlogic.getWidth() * INV_SCALE, badlogic.getHeight() * INV_SCALE);
 
         // Fixture definition for our box
         boxFixtureDef = new FixtureDef();
@@ -67,6 +83,12 @@ public class Box2DExperimentsBasicScreen extends InputAdapter implements Screen 
         boxBodyDef.position.set(x, y);
         box = world.createBody(boxBodyDef);
         box.createFixture(boxFixtureDef);
+        Box newBox = new Box(x, y, 0 , badlogic );
+        newBox.body = box;
+        Vector2 origin = box.getLocalCenter();
+        newBox.ox = origin.x;
+        newBox.oy = origin.y;
+        boxes.add(newBox);
 
         Gdx.app.log(TAG, "Bodies: " + world.getBodyCount());
     }
@@ -83,6 +105,12 @@ public class Box2DExperimentsBasicScreen extends InputAdapter implements Screen 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         world.step(1f / 60f, 6, 4);
+        batch.setProjectionMatrix(camera.combined);
+        batch.begin();
+        for (Box b : boxes) {
+            b.draw(batch);
+        }
+        batch.end();
 
         debugRenderer.render(world, camera.combined);
 
@@ -155,4 +183,42 @@ public class Box2DExperimentsBasicScreen extends InputAdapter implements Screen 
         def.type = BodyDef.BodyType.DynamicBody;
         return def;
     }
+
+    private class Box {
+
+        public Body body;
+        public Texture texture;
+        public float x, y;
+        public float rotation;
+        private float width;
+        private float height;
+        private int srcWidth;
+        private int srcHeight;
+        public float ox, oy;
+
+        public Box(float x, float y, float rotation, Texture texture) {
+            this.x = x;
+            this.y = y;
+            this.rotation = rotation;
+            this.texture = texture;
+            srcWidth = texture.getWidth();
+            width = srcWidth * INV_SCALE;
+            srcHeight = texture.getHeight();
+            height = srcHeight * INV_SCALE;
+        }
+
+        public void update() {
+            Vector2 position = body.getPosition();
+            x = position.x;
+            y = position.y;
+            rotation = body.getAngle() * MathUtils.radiansToDegrees;
+        }
+
+        public void draw(Batch batch) {
+            batch.draw(texture, x - ox, y - oy, ox, oy, width, height, 1, 1, rotation, 0, 0, srcWidth,
+                    srcHeight, false, false);
+        }
+
+    }
+
 }
