@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 
@@ -30,6 +31,7 @@ public class Box2DExperimentsSimpleImage extends InputAdapter implements Screen 
 
     private World world;
     private Box2DDebugRenderer debugRenderer;
+    private Body groundBody;
 
 
     //Box
@@ -47,7 +49,7 @@ public class Box2DExperimentsSimpleImage extends InputAdapter implements Screen 
 
         world = new World(new Vector2(0, -9.8f), true);
         debugRenderer = new Box2DDebugRenderer();
-        debugRenderer.setDrawAABBs(true);
+        //debugRenderer.setDrawAABBs(true);
 
         createGround();
 
@@ -65,6 +67,9 @@ public class Box2DExperimentsSimpleImage extends InputAdapter implements Screen 
         boxFixtureDef.density = 0.8f;
         boxFixtureDef.friction = 0.8f;
         boxFixtureDef.restitution = 0.55f;
+
+        boxBodyDef.position.set(10f, 10f);
+        world.createBody(boxBodyDef);
     }
 
 
@@ -79,14 +84,17 @@ public class Box2DExperimentsSimpleImage extends InputAdapter implements Screen 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         Array<Body> bodies = new Array<Body>();
+        world.getBodies(bodies);
         batch.begin();
 
         for (Body currentBody : bodies) {
-            Vector2 currentBodyPosition = currentBody.getPosition();
-            sprite.setBounds(currentBodyPosition.x - sprite.getWidth() / 2,
-                    currentBodyPosition.y - sprite.getHeight() / 2, 1, 1);
-            sprite.setOriginCenter();
-            sprite.draw(batch);
+            if (!currentBody.equals(groundBody)) {
+                Vector2 currentBodyPosition = currentBody.getPosition();
+                sprite.setBounds(currentBodyPosition.x - sprite.getWidth() / 2,
+                        currentBodyPosition.y - sprite.getHeight() / 2, 1, 1);
+                sprite.setOriginCenter();
+                sprite.draw(batch);
+            }
         }
 
         batch.end();
@@ -133,12 +141,12 @@ public class Box2DExperimentsSimpleImage extends InputAdapter implements Screen 
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        /*Vector3 target = camera.unproject(new Vector3(screenX, screenY, 0));
+        Vector3 target = camera.unproject(new Vector3(screenX, screenY, 0));
         float x = target.x;
         float y = target.y;
-        init(x, y);*/
+        //init(x, y);
 
-        boxBodyDef.position.set(screenX, screenY);
+        boxBodyDef.position.set(x, y);
         world.createBody(boxBodyDef);
 
 
@@ -160,7 +168,7 @@ public class Box2DExperimentsSimpleImage extends InputAdapter implements Screen 
         groundBodyDef.position.set(halfGroundWidth * 0.5f, halfGroundHeight);
 
         // Create a body from the definition and add it to the world
-        Body groundBody = world.createBody(groundBodyDef);
+        groundBody = world.createBody(groundBodyDef);
 
         // Create a rectangle shape which will fit the world_width and 1 meter high
         // (setAsBox takes half-width and half-height as arguments)
