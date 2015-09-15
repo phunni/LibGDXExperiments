@@ -127,8 +127,7 @@ public class Box2DExperimentsBasicScreen extends InputAdapter implements Screen 
     private void createGround() {
 
         float halfGroundWidth = VP_WIDTH;
-        float halfGroundHeight = 0.0f; // 1 meter high
-
+        float halfGroundHeight = 0.0f; 
         // Create a static body definition
         BodyDef groundBodyDef = new BodyDef();
         groundBodyDef.type = BodyDef.BodyType.StaticBody;

@@ -8,13 +8,16 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import uk.co.redfruit.gdx.experiments.box2d.Box2DExperimentsBasicScreen;
+import uk.co.redfruit.gdx.experiments.box2d.Box2DExperimentsComplexShapes;
 import uk.co.redfruit.gdx.experiments.box2d.Box2DExperimentsSimpleImage;
 
 public class LibGDXExperiments extends Game {
 	
 	@Override
 	public void create () {
-        Screen screen = new Box2DExperimentsSimpleImage();
+        Screen screen = new Box2DExperimentsComplexShapes();
+        //Screen screen = new Box2DExperimentsSimpleImage();
+		//Screen screen = new Box2DExperimentsBasicScreen();
         setScreen(screen);
 	}
 

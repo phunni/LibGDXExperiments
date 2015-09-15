@@ -8,10 +8,13 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 /**
  * Created by paul on 11/09/15.
@@ -26,6 +29,7 @@ public class Box2DExperimentsSimpleImage extends InputAdapter implements Screen 
 
     private SpriteBatch batch;
     private OrthographicCamera camera;
+    private Viewport viewport;
 
     private Sprite sprite;
 
@@ -44,6 +48,7 @@ public class Box2DExperimentsSimpleImage extends InputAdapter implements Screen 
         Gdx.input.setInputProcessor(this);
         batch = new SpriteBatch();
         camera = new OrthographicCamera(WORLD_WIDTH, WORLD_HEIGHT);
+        viewport = new ExtendViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
         camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
         camera.update();
 
@@ -69,7 +74,8 @@ public class Box2DExperimentsSimpleImage extends InputAdapter implements Screen 
         boxFixtureDef.restitution = 0.55f;
 
         boxBodyDef.position.set(10f, 10f);
-        world.createBody(boxBodyDef);
+        Body body = world.createBody(boxBodyDef);
+        body.createFixture(boxFixtureDef);
     }
 
 
@@ -90,10 +96,15 @@ public class Box2DExperimentsSimpleImage extends InputAdapter implements Screen 
         for (Body currentBody : bodies) {
             if (!currentBody.equals(groundBody)) {
                 Vector2 currentBodyPosition = currentBody.getPosition();
-                sprite.setBounds(currentBodyPosition.x - sprite.getWidth() / 2,
-                        currentBodyPosition.y - sprite.getHeight() / 2, 1, 1);
-                sprite.setOriginCenter();
-                sprite.draw(batch);
+                if (camera.frustum.pointInFrustum(new Vector3(currentBodyPosition.x, currentBodyPosition.y, 0))) {
+                    sprite.setBounds(currentBodyPosition.x - sprite.getWidth() / 2,
+                            currentBodyPosition.y - sprite.getHeight() / 2, 1, 1);
+                    sprite.setOriginCenter();
+                    sprite.setRotation(MathUtils.radiansToDegrees * currentBody.getAngle());
+                    sprite.draw(batch);
+                } else {
+                    world.destroyBody(currentBody);
+                }
             }
         }
 
@@ -101,7 +112,7 @@ public class Box2DExperimentsSimpleImage extends InputAdapter implements Screen 
 
         debugRenderer.render(world, camera.combined);
 
-        world.step(1f / 60f, 6, 4);
+        world.step(1f / 60f, 6, 2);
 
 
     }
@@ -147,7 +158,8 @@ public class Box2DExperimentsSimpleImage extends InputAdapter implements Screen 
         //init(x, y);
 
         boxBodyDef.position.set(x, y);
-        world.createBody(boxBodyDef);
+        Body body = world.createBody(boxBodyDef);
+        body.createFixture(boxFixtureDef);
 
 
         Gdx.app.log(TAG, "Bodies: " + world.getBodyCount());
@@ -158,7 +170,7 @@ public class Box2DExperimentsSimpleImage extends InputAdapter implements Screen 
     private void createGround() {
 
         float halfGroundWidth = WORLD_WIDTH;
-        float halfGroundHeight = 0.0f; // 1 meter high
+        float halfGroundHeight = 0.0f;
 
         // Create a static body definition
         BodyDef groundBodyDef = new BodyDef();
