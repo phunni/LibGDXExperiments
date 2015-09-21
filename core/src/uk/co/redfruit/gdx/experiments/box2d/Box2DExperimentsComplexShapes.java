@@ -6,6 +6,7 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -19,18 +20,15 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 /**
  * Created by paul on 15/09/15.
  */
-public class Box2DExperimentsComplexShapes extends InputAdapter implements Screen {
-
-    private static final float WORLD_WIDTH = 20f;
-    private static final float WORLD_HEIGHT = 10f;
+public class Box2DExperimentsComplexShapes extends BaseScreen {
 
     private static final String TAG = "Box2DExperimentsComplexShapes";
 
-    private SpriteBatch batch;
-    private OrthographicCamera camera;
-    private Viewport viewport;
-
     private TextureAtlas atlas;
+
+    private float BOTTLE_WIDTH = 2f;
+    private float JIGSAW_WIDTH = 2f;
+    private float SHIP_WIDTH = 1.5f;
 
     private Sprite box;
     private Sprite circle;
@@ -47,26 +45,14 @@ public class Box2DExperimentsComplexShapes extends InputAdapter implements Scree
     private FixtureDef jigsawFixtureDef;
     private FixtureDef shipFixtureDef;
 
-    private World world;
-    private Box2DDebugRenderer debugRenderer;
-    private Body groundBody;
     private BodyEditorLoader loader;
 
     private Array<Box2dObject> objects = new Array<Box2dObject>();
 
     public Box2DExperimentsComplexShapes() {
-        Gdx.input.setInputProcessor(this);
-        batch = new SpriteBatch();
-        camera = new OrthographicCamera(WORLD_WIDTH, WORLD_HEIGHT);
-        camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
-        camera.update();
-        batch.setProjectionMatrix(camera.combined);
+        super();
 
-        world = new World(new Vector2(0, -9.8f), true);
-        debugRenderer = new Box2DDebugRenderer();
         loader = new BodyEditorLoader(Gdx.files.internal("box2d/libgdx_experiments.json"));
-
-        createGround();
 
         atlas = new TextureAtlas(Gdx.files.internal("images/libgdx_box2d_experiments.pack"));
 
@@ -75,6 +61,7 @@ public class Box2DExperimentsComplexShapes extends InputAdapter implements Scree
         bottle = atlas.createSprite("bottle");
         jigsaw = atlas.createSprite("jigsaw");
         ship = atlas.createSprite("ship");
+
 
         createShapesAndFixtureDefs();
 
@@ -88,7 +75,7 @@ public class Box2DExperimentsComplexShapes extends InputAdapter implements Scree
 
         // Shape for circles
         circleShape = new CircleShape();
-        // 0.5 metres for radius
+        // 0.9 metres for radius
         circleShape.setRadius(0.9f);
 
         boxFixtureDef = new FixtureDef();
@@ -107,21 +94,21 @@ public class Box2DExperimentsComplexShapes extends InputAdapter implements Scree
 
         //Fixture for bottle
         bottleFixtureDef = new FixtureDef();
-        bottleFixtureDef.density = 0.5f;
-        bottleFixtureDef.friction = 5.4f;
-        bottleFixtureDef.restitution = 0.4f;
+        bottleFixtureDef.density = 1f;
+        bottleFixtureDef.friction = 0.5f;
+        bottleFixtureDef.restitution = 0.3f;
 
         //Fixture for Jigsaw
         jigsawFixtureDef = new FixtureDef();
         jigsawFixtureDef.density = 0.5f;
         jigsawFixtureDef.friction = 5.4f;
-        jigsawFixtureDef.restitution = 0.6f;
+        jigsawFixtureDef.restitution = 0.4f;
 
         //Fixture for Ship
         shipFixtureDef = new FixtureDef();
-        jigsawFixtureDef.density = 0.5f;
-        jigsawFixtureDef.friction = 5.4f;
-        jigsawFixtureDef.restitution = 0.8f;
+        shipFixtureDef.density = 1f;
+        shipFixtureDef.friction = 0.5f;
+        shipFixtureDef.restitution = 0.4f;
     }
 
     @Override
@@ -131,27 +118,40 @@ public class Box2DExperimentsComplexShapes extends InputAdapter implements Scree
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClearColor(0x64 / 255.0f, 0x95 / 255.0f, 0xed / 255.0f, 0xff / 255.0f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         batch.begin();
 
-        for (Box2dObject currentObject : objects) {
-            Vector2 currentBodyPosition = currentObject.body.getPosition();
-
-            Sprite sprite = currentObject.sprite;
-            if (currentObject.name.equals("box") || currentObject.name.equals("circle")){
-                sprite.setOriginCenter();
-                sprite.setBounds(currentBodyPosition.x - sprite.getWidth() / 2,
-                        currentBodyPosition.y - sprite.getHeight() / 2, 2, 2);
-            } else {
-                Vector2 origin = loader.getOrigin(currentObject.name, 1f).cpy();
-                sprite.setOrigin(origin.x, origin.y);
-                sprite.setBounds(currentBodyPosition.x,  currentBodyPosition.y, 2, 2);
+        for (Box2dObject object : objects) {
+            Vector2 position = object.body.getPosition().sub(object.origin);
+            object.sprite.setPosition(position.x , position.y);
+            if ("box".equals(object.name)) {
+                position = object.body.getPosition();
+                object.sprite.setOriginCenter();
+                object.sprite.setBounds(position.x - object.sprite.getWidth() / 2,
+                        position.y - object.sprite.getHeight() / 2, 2, 2);
+            } else if ("circle".equals(object.name)) {
+                position = object.body.getPosition();
+                object.sprite.setOriginCenter();
+                object.sprite.setBounds(position.x - object.sprite.getWidth() / 2,
+                        position.y - object.sprite.getHeight() / 2, 2, 2);
+            } else if ("bottle".equals(object.name)) {
+                object.sprite.setPosition(position.x , position.y);
+                object.sprite.setOrigin(object.origin.x, object.origin.y);
+                object.sprite.setBounds(position.x, position.y, BOTTLE_WIDTH, BOTTLE_WIDTH);
+            } else if("jigsaw".equals(object.name)) {
+                object.sprite.setPosition(position.x , position.y);
+                object.sprite.setOrigin(object.origin.x, object.origin.y);
+                object.sprite.setBounds(position.x, position.y, JIGSAW_WIDTH, JIGSAW_WIDTH);
+            } else if("ship".equals(object.name)) {
+                object.sprite.setPosition(position.x , position.y);
+                object.sprite.setOrigin(object.origin.x, object.origin.y);
+                object.sprite.setBounds(position.x, position.y, SHIP_WIDTH,
+                        SHIP_WIDTH * object.sprite.getHeight()/object.sprite.getWidth());
             }
-
-            sprite.setRotation(MathUtils.radiansToDegrees * currentObject.body.getAngle());
-            sprite.draw(batch);
+            object.sprite.setRotation(object.body.getAngle() * MathUtils.radiansToDegrees);
+            object.sprite.draw(batch);
         }
 
 
@@ -162,17 +162,6 @@ public class Box2DExperimentsComplexShapes extends InputAdapter implements Scree
         world.step(1f / 60f, 6, 2);
 
 
-    }
-
-    @Override
-    public void resize(int width, int height) {
-        float screenAR = width / (float) height;
-        camera = new OrthographicCamera(20, 20 / screenAR);
-        camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
-        camera.update();
-
-        batch = new SpriteBatch();
-        batch.setProjectionMatrix(camera.combined);
     }
 
     @Override
@@ -192,9 +181,8 @@ public class Box2DExperimentsComplexShapes extends InputAdapter implements Scree
 
     @Override
     public void dispose() {
+        super.dispose();
         atlas.dispose();
-        debugRenderer.dispose();
-        world.dispose();
         squareShape.dispose();
         circleShape.dispose();
     }
@@ -205,8 +193,8 @@ public class Box2DExperimentsComplexShapes extends InputAdapter implements Scree
         float x = target.x;
         float y = target.y;
 
-        //int objectType = MathUtils.random(4);
-        int objectType = 2;
+        int objectType = MathUtils.random(4);
+        //int objectType = 1;
 
         Body body;
 
@@ -214,47 +202,47 @@ public class Box2DExperimentsComplexShapes extends InputAdapter implements Scree
 
             case 0:
                 body = createBoxBody(x, y);
-                objects.add(new Box2dObject(body, box, "box"));
+                objects.add(new Box2dObject(body, box, "box", new Vector2(box.getOriginX(), box.getOriginY())));
                 break;
             case 1:
                 body = createCircleBody(x, y);
-                objects.add(new Box2dObject(body, circle, "circle"));
+                objects.add(new Box2dObject(body, circle, "circle", new Vector2(circle.getOriginX(), circle.getOriginY())));
                 break;
             case 2:
                 body = createBottleBody(x, y);
-                objects.add(new Box2dObject(body, bottle, "bottle"));
+                objects.add(new Box2dObject(body, bottle, "bottle", loader.getOrigin("bottle", BOTTLE_WIDTH)));
                 break;
             case 3:
                 body = createJigsawBody(x, y);
-                objects.add(new Box2dObject(body, jigsaw, "jigsaw"));
+                objects.add(new Box2dObject(body, jigsaw, "jigsaw",loader.getOrigin("jigsaw", JIGSAW_WIDTH)));
                 break;
             case 4:
                 body = createShipBody(x, y);
-                objects.add(new Box2dObject(body, ship, "ship"));
+                objects.add(new Box2dObject(body, ship, "ship", loader.getOrigin("ship", SHIP_WIDTH)));
                 break;
         }
 
         Gdx.app.log(TAG, "Bodies: " + world.getBodyCount());
-        Gdx.app.log(TAG, "Objects: " + objects.size);
+        //Gdx.app.log(TAG, "Objects: " + objects.size);
 
         return true;
     }
 
     private Body createShipBody(float x, float y) {
         Body body = getBody(x, y);
-        loader.attachFixture(body, "ship", shipFixtureDef, 1);
+        loader.attachFixture(body, "ship", shipFixtureDef, SHIP_WIDTH);
         return body;
     }
 
     private Body createJigsawBody(float x, float y) {
         Body body = getBody(x, y);
-        loader.attachFixture(body, "jigsaw", jigsawFixtureDef, 2);
+        loader.attachFixture(body, "jigsaw", jigsawFixtureDef, JIGSAW_WIDTH);
         return body;
     }
 
     private Body createBottleBody(float x, float y) {
         Body body = getBody(x, y);
-        loader.attachFixture(body, "bottle", bottleFixtureDef, 2);
+        loader.attachFixture(body, "bottle", bottleFixtureDef, BOTTLE_WIDTH);
         return body;
     }
 
@@ -276,48 +264,20 @@ public class Box2DExperimentsComplexShapes extends InputAdapter implements Scree
         return world.createBody(bodyDef);
     }
 
-    private void createGround() {
 
-        float halfGroundWidth = WORLD_WIDTH;
-        float halfGroundHeight = 0.0f;
-
-        // Create a static body definition
-        BodyDef groundBodyDef = new BodyDef();
-        groundBodyDef.type = BodyDef.BodyType.StaticBody;
-
-        // Set the ground position
-        groundBodyDef.position.set(halfGroundWidth * 0.5f, halfGroundHeight);
-
-        // Create a body from the definition and add it to the world
-        groundBody = world.createBody(groundBodyDef);
-
-        // Create a rectangle shape which will fit the world_width and 1 meter high
-        // (setAsBox takes half-width and half-height as arguments)
-        PolygonShape groundBox = new PolygonShape();
-        groundBox.setAsBox(halfGroundWidth * 0.5f, halfGroundHeight);
-        // Create a fixture from our rectangle shape and add it to our ground body
-        groundBody.createFixture(groundBox, 0.0f);
-        // Free resources
-        groundBox.dispose();
-
-    }
-
-    private BodyDef getDynamicBodyDef() {
-        BodyDef def = new BodyDef();
-        def.type = BodyDef.BodyType.DynamicBody;
-        return def;
-    }
 
     private class Box2dObject {
 
         public Body body;
         public Sprite sprite;
         public String name;
+        public Vector2 origin;
 
-        public Box2dObject(Body body, Sprite sprite, String name) {
+        public Box2dObject(Body body, Sprite sprite, String name, Vector2 origin) {
             this.body = body;
             this.sprite = sprite;
             this.name = name;
+            this.origin = origin;
         }
 
 
