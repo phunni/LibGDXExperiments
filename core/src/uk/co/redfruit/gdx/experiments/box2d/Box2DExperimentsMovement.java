@@ -32,6 +32,7 @@ public class Box2DExperimentsMovement extends BaseScreen {
     private boolean movingLeft;
 
     private BodyEditorLoader loader;
+    
 
     public Box2DExperimentsMovement() {
         super();
