@@ -1,6 +1,7 @@
 package uk.co.redfruit.gdx.experiments.box2d;
 
 import aurelienribon.bodyeditor.BodyEditorLoader;
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
@@ -32,10 +33,10 @@ public class Box2DExperimentsMovement extends BaseScreen {
     private boolean movingLeft;
 
     private BodyEditorLoader loader;
-    
 
-    public Box2DExperimentsMovement() {
-        super();
+
+    public Box2DExperimentsMovement(Game game) {
+        super(game);
         texture = new Texture(Gdx.files.internal("images/ship.png"));
         sprite = new Sprite(texture);
         loader = new BodyEditorLoader(Gdx.files.internal("box2d/ship.json"));
@@ -86,6 +87,7 @@ public class Box2DExperimentsMovement extends BaseScreen {
 
     @Override
     public boolean keyDown(int keycode) {
+        super.keyDown(keycode);
         if (keycode == Input.Keys.LEFT) {
             movingLeft = true;
         } else if (keycode == Input.Keys.RIGHT) {

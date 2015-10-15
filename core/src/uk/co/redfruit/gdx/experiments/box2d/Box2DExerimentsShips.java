@@ -1,6 +1,7 @@
 package uk.co.redfruit.gdx.experiments.box2d;
 
 import aurelienribon.bodyeditor.BodyEditorLoader;
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
@@ -30,8 +31,8 @@ public class Box2DExerimentsShips extends BaseScreen {
 
     private Array<Ship> ships = new Array<Ship>();
 
-    public Box2DExerimentsShips() {
-        super();
+    public Box2DExerimentsShips(Game game) {
+        super(game);
         texture = new Texture(Gdx.files.internal("images/ship.png"));
         sprite = new Sprite(texture);
         loader = new BodyEditorLoader(Gdx.files.internal("box2d/ship.json"));

@@ -1,5 +1,6 @@
 package uk.co.redfruit.gdx.experiments.box2d;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Screen;
@@ -19,7 +20,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 /**
  * Created by paul on 11/09/15.
  */
-public class Box2DExperimentsSimpleImage extends InputAdapter implements Screen {
+public class Box2DExperimentsSimpleImage extends BaseScreen {
 
     public final static float WORLD_WIDTH = 20f;
     public final static float WORLD_HEIGHT = 10f;
@@ -27,15 +28,7 @@ public class Box2DExperimentsSimpleImage extends InputAdapter implements Screen 
 
     private static final String TAG = "Box2DExperimentsSimpleImage";
 
-    private SpriteBatch batch;
-    private OrthographicCamera camera;
-    private Viewport viewport;
-
     private Sprite sprite;
-
-    private World world;
-    private Box2DDebugRenderer debugRenderer;
-    private Body groundBody;
 
 
     //Box
@@ -44,19 +37,8 @@ public class Box2DExperimentsSimpleImage extends InputAdapter implements Screen 
     private PolygonShape square;
 
 
-    public Box2DExperimentsSimpleImage() {
-        Gdx.input.setInputProcessor(this);
-        batch = new SpriteBatch();
-        camera = new OrthographicCamera(WORLD_WIDTH, WORLD_HEIGHT);
-        viewport = new ExtendViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
-        camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
-        camera.update();
-
-        world = new World(new Vector2(0, -9.8f), true);
-        debugRenderer = new Box2DDebugRenderer();
-        //debugRenderer.setDrawAABBs(true);
-
-        createGround();
+    public Box2DExperimentsSimpleImage(Game game) {
+        super(game);
 
         sprite = new Sprite(new Texture(Gdx.files.internal("badlogic.jpg")));
 
@@ -165,38 +147,6 @@ public class Box2DExperimentsSimpleImage extends InputAdapter implements Screen 
         Gdx.app.log(TAG, "Bodies: " + world.getBodyCount());
 
         return true;
-    }
-
-    private void createGround() {
-
-        float halfGroundWidth = WORLD_WIDTH;
-        float halfGroundHeight = 0.0f;
-
-        // Create a static body definition
-        BodyDef groundBodyDef = new BodyDef();
-        groundBodyDef.type = BodyDef.BodyType.StaticBody;
-
-        // Set the ground position
-        groundBodyDef.position.set(halfGroundWidth * 0.5f, halfGroundHeight);
-
-        // Create a body from the definition and add it to the world
-        groundBody = world.createBody(groundBodyDef);
-
-        // Create a rectangle shape which will fit the world_width and 1 meter high
-        // (setAsBox takes half-width and half-height as arguments)
-        PolygonShape groundBox = new PolygonShape();
-        groundBox.setAsBox(halfGroundWidth * 0.5f, halfGroundHeight);
-        // Create a fixture from our rectangle shape and add it to our ground body
-        groundBody.createFixture(groundBox, 0.0f);
-        // Free resources
-        groundBox.dispose();
-
-    }
-
-    private BodyDef getDynamicBodyDef() {
-        BodyDef def = new BodyDef();
-        def.type = BodyDef.BodyType.DynamicBody;
-        return def;
     }
 
 }

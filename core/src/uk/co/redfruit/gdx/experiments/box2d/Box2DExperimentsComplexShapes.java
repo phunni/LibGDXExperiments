@@ -1,16 +1,16 @@
 package uk.co.redfruit.gdx.experiments.box2d;
 
 import aurelienribon.bodyeditor.BodyEditorLoader;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
@@ -25,6 +25,7 @@ public class Box2DExperimentsComplexShapes extends BaseScreen {
     private static final String TAG = "Box2DExperimentsComplexShapes";
 
     private TextureAtlas atlas;
+    private BitmapFont font;
 
     private float BOTTLE_WIDTH = 2f;
     private float JIGSAW_WIDTH = 2f;
@@ -49,8 +50,10 @@ public class Box2DExperimentsComplexShapes extends BaseScreen {
 
     private Array<Box2dObject> objects = new Array<Box2dObject>();
 
-    public Box2DExperimentsComplexShapes() {
-        super();
+    public Box2DExperimentsComplexShapes(Game game) {
+        super(game);
+        font = new BitmapFont(Gdx.files.internal("skins/arial-15.fnt"),
+                Gdx.files.internal("skins/arial-15.png"), false);
 
         loader = new BodyEditorLoader(Gdx.files.internal("box2d/libgdx_experiments.json"));
 
@@ -125,7 +128,7 @@ public class Box2DExperimentsComplexShapes extends BaseScreen {
 
         for (Box2dObject object : objects) {
             Vector2 position = object.body.getPosition().sub(object.origin);
-            object.sprite.setPosition(position.x , position.y);
+            object.sprite.setPosition(position.x, position.y);
             if ("box".equals(object.name)) {
                 position = object.body.getPosition();
                 object.sprite.setOriginCenter();
@@ -152,9 +155,16 @@ public class Box2DExperimentsComplexShapes extends BaseScreen {
             }
             object.sprite.setRotation(object.body.getAngle() * MathUtils.radiansToDegrees);
             object.sprite.draw(batch);
+
+            Rectangle bounds = object.sprite.getBoundingRectangle();
+
+            /*if (!camera.frustum.boundsInFrustum(bounds.x, bounds.y, 0f, bounds.getWidth() / 2, bounds.getHeight() / 2, 0f)){
+                objects.removeValue(object, false);
+                world.destroyBody(object.body);
+            }*/
         }
 
-
+        //font.draw(batch, "fps:"+Gdx.graphics.getFramesPerSecond(), 1, 1);
         batch.end();
 
         debugRenderer.render(world, camera.combined);
@@ -176,7 +186,7 @@ public class Box2DExperimentsComplexShapes extends BaseScreen {
 
     @Override
     public void hide() {
-
+        Gdx.app.log(TAG, "Max Sprites in Batch: " + batch.maxSpritesInBatch);
     }
 
     @Override
@@ -227,6 +237,7 @@ public class Box2DExperimentsComplexShapes extends BaseScreen {
 
         return true;
     }
+
 
     private Body createShipBody(float x, float y) {
         Body body = getBody(x, y);

@@ -5,13 +5,15 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.utils.viewport.StretchViewport;
 import uk.co.redfruit.gdx.experiments.box2d.*;
 
 /**
@@ -23,11 +25,14 @@ public class MenuScreen extends ChangeListener implements Screen {
     protected static final float WORLD_HEIGHT = 10f;
 
     protected SpriteBatch batch;
-    protected OrthographicCamera camera;
+    //protected OrthographicCamera camera;
 
     private Stage stage;
     private Skin skin;
     private Game game;
+
+    private Texture background;
+    private Image backgroundImage;
 
     private Button basicScreen;
     private Button simpleImage;
@@ -41,16 +46,17 @@ public class MenuScreen extends ChangeListener implements Screen {
         super();
         this.game = game;
         batch = new SpriteBatch();
-        camera = new OrthographicCamera(WORLD_WIDTH, WORLD_HEIGHT);
+        //camera = new OrthographicCamera(WORLD_WIDTH, WORLD_HEIGHT);
         //camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
-        camera.update();
-        batch.setProjectionMatrix(camera.combined);
+        //camera.update();
+        //batch.setProjectionMatrix(camera.combined);
     }
 
     @Override
     public void show() {
-        stage  = new Stage(new ScreenViewport());
+        stage  = new Stage();
         Gdx.input.setInputProcessor(stage);
+        background = new Texture(Gdx.files.internal("images/background.png"));
         rebuildStage();
     }
 
@@ -59,6 +65,10 @@ public class MenuScreen extends ChangeListener implements Screen {
     public void render(float delta) {
         Gdx.gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        stage.getBatch().begin();
+        stage.getBatch().draw(background, 0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+        stage.getBatch().end();
 
         stage.act();
         stage.draw();
@@ -86,24 +96,24 @@ public class MenuScreen extends ChangeListener implements Screen {
 
     @Override
     public void dispose() {
-
+        background.dispose();
     }
 
 
     @Override
     public void changed(ChangeEvent event, Actor actor) {
         if (actor.equals(basicScreen)) {
-            game.setScreen(new Box2DExperimentsBasicScreen());
+            game.setScreen(new Box2DExperimentsBasicScreen(game));
         } else if (actor.equals(simpleImage)) {
-            game.setScreen(new Box2DExperimentsSimpleImage());
+            game.setScreen(new Box2DExperimentsSimpleImage(game));
         } else if (actor.equals(complexShapes)) {
-            game.setScreen(new Box2DExperimentsComplexShapes());
+            game.setScreen(new Box2DExperimentsComplexShapes(game));
         } else if (actor.equals(bottles)) {
-            game.setScreen(new Box2DExperimentsBottles());
+            game.setScreen(new Box2DExperimentsBottles(game));
         } else if (actor.equals(ships)) {
-            game.setScreen(new Box2DExerimentsShips());
+            game.setScreen(new Box2DExerimentsShips(game));
         } else if (actor.equals(movement)) {
-            game.setScreen(new Box2DExperimentsMovement());
+            game.setScreen(new Box2DExperimentsMovement(game));
         }
     }
 
@@ -112,8 +122,19 @@ public class MenuScreen extends ChangeListener implements Screen {
 
         stage.clear();
         Stack stack = new Stack();
-        stack.add(getMenuTable());
-        stage.addActor(stack);
+        stage.addActor(getMenuTable());
+        //stack.setSize(800, 480);
+        //stack.add(getBackGroundTable());
+        //stack.add(getMenuTable());
+
+    }
+
+    private Table getBackGroundTable() {
+        Table table = new Table();
+        backgroundImage = new Image(background);
+        backgroundImage.setSize(WORLD_WIDTH, WORLD_HEIGHT);
+        table.add(backgroundImage);
+        return table;
     }
 
     private Table getMenuTable() {

@@ -1,6 +1,7 @@
 package uk.co.redfruit.gdx.experiments.box2d;
 
 import aurelienribon.bodyeditor.BodyEditorLoader;
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
@@ -30,8 +31,8 @@ public class Box2DExperimentsBottles extends BaseScreen {
 
     private Array<Bottle> bottles = new Array<Bottle>();
 
-    public Box2DExperimentsBottles() {
-        super();
+    public Box2DExperimentsBottles(Game game) {
+        super(game);
         texture = new Texture(Gdx.files.internal("images/bottle.png"));
         sprite = new Sprite(texture);
         loader = new BodyEditorLoader(Gdx.files.internal("box2d/bottle.json"));

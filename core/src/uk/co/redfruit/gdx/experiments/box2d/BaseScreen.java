@@ -1,13 +1,11 @@
 package uk.co.redfruit.gdx.experiments.box2d;
 
-import aurelienribon.bodyeditor.BodyEditorLoader;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import uk.co.redfruit.gdx.experiments.MenuScreen;
 
 /**
  * Created by paul on 18/09/15.
@@ -23,9 +21,11 @@ public abstract class BaseScreen extends InputAdapter implements Screen {
     protected World world;
     protected Box2DDebugRenderer debugRenderer;
     protected Body groundBody;
+    protected Game game;
 
-    public BaseScreen() {
+    public BaseScreen(Game game) {
         Gdx.input.setInputProcessor(this);
+        this.game = game;
         batch = new SpriteBatch();
         camera = new OrthographicCamera(WORLD_WIDTH, WORLD_HEIGHT);
         camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
@@ -74,6 +74,17 @@ public abstract class BaseScreen extends InputAdapter implements Screen {
         world.dispose();
         batch.dispose();
         debugRenderer.dispose();
+    }
+
+    @Override
+    public boolean keyDown(int keycode) {
+        if (keycode == Input.Keys.ESCAPE) {
+            game.setScreen(new MenuScreen(game));
+        } else if (keycode == Input.Keys.BACK) {
+            game.setScreen(new MenuScreen(game));
+        }
+
+        return false;
     }
 
     protected void createGround() {
