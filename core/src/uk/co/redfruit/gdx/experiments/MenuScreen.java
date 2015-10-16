@@ -12,8 +12,6 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.FillViewport;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.badlogic.gdx.utils.viewport.StretchViewport;
 import uk.co.redfruit.gdx.experiments.box2d.*;
 
 /**
@@ -25,7 +23,7 @@ public class MenuScreen extends ChangeListener implements Screen {
     protected static final float WORLD_HEIGHT = 10f;
 
     protected SpriteBatch batch;
-    //protected OrthographicCamera camera;
+    protected OrthographicCamera camera;
 
     private Stage stage;
     private Skin skin;
@@ -46,15 +44,15 @@ public class MenuScreen extends ChangeListener implements Screen {
         super();
         this.game = game;
         batch = new SpriteBatch();
-        //camera = new OrthographicCamera(WORLD_WIDTH, WORLD_HEIGHT);
+        camera = new OrthographicCamera(WORLD_WIDTH, WORLD_HEIGHT);
         //camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
-        //camera.update();
-        //batch.setProjectionMatrix(camera.combined);
+        camera.update();
+        batch.setProjectionMatrix(camera.combined);
     }
 
     @Override
     public void show() {
-        stage  = new Stage();
+        stage  = new Stage(new FillViewport(800, 480, camera));
         Gdx.input.setInputProcessor(stage);
         background = new Texture(Gdx.files.internal("images/background.png"));
         rebuildStage();
@@ -66,17 +64,13 @@ public class MenuScreen extends ChangeListener implements Screen {
         Gdx.gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        stage.getBatch().begin();
-        stage.getBatch().draw(background, 0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-        stage.getBatch().end();
-
         stage.act();
         stage.draw();
     }
 
     @Override
     public void resize(int width, int height) {
-        stage.getViewport().update(width, height, true);
+        stage.getViewport().update(width, height, false);
     }
 
     @Override
@@ -122,10 +116,10 @@ public class MenuScreen extends ChangeListener implements Screen {
 
         stage.clear();
         Stack stack = new Stack();
-        stage.addActor(getMenuTable());
-        //stack.setSize(800, 480);
-        //stack.add(getBackGroundTable());
-        //stack.add(getMenuTable());
+        stage.addActor(stack);
+        stack.setSize(800, 480);
+        stack.add(getBackGroundTable());
+        stack.add(getMenuTable());
 
     }
 
