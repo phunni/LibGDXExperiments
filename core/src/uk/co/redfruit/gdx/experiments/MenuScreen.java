@@ -1,8 +1,6 @@
 package uk.co.redfruit.gdx.experiments;
 
-import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -17,7 +15,7 @@ import uk.co.redfruit.gdx.experiments.box2d.*;
 /**
  * Created by paul on 12/10/15.
  */
-public class MenuScreen extends ChangeListener implements Screen {
+public class MenuScreen extends ChangeListener implements Screen, InputProcessor {
 
     protected static final float WORLD_WIDTH = 20f;
     protected static final float WORLD_HEIGHT = 10f;
@@ -39,6 +37,8 @@ public class MenuScreen extends ChangeListener implements Screen {
     private Button movement;
     private Button ships;
     private Button runningMan;
+    private Button explosion;
+    private Button particles;
 
     public MenuScreen(Game game) {
         super();
@@ -53,7 +53,10 @@ public class MenuScreen extends ChangeListener implements Screen {
     @Override
     public void show() {
         stage  = new Stage(new FillViewport(800, 480, camera));
-        Gdx.input.setInputProcessor(stage);
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(this);
+        multiplexer.addProcessor(stage);
+        Gdx.input.setInputProcessor(multiplexer);
         background = new Texture(Gdx.files.internal("images/background.png"));
         rebuildStage();
     }
@@ -108,6 +111,12 @@ public class MenuScreen extends ChangeListener implements Screen {
             game.setScreen(new Box2DExerimentsShips(game));
         } else if (actor.equals(movement)) {
             game.setScreen(new Box2DExperimentsMovement(game));
+        } else if (actor.equals(runningMan)) {
+            game.setScreen(new LibGDXExperimentsRunningMan(game));
+        } else if (actor.equals(explosion)) {
+            game.setScreen(new LibGDXExperimentsExplosion(game));
+        } else if (actor.equals(particles)) {
+            game.setScreen(new LibGDXExperimentsParticles(game));
         }
     }
 
@@ -152,6 +161,16 @@ public class MenuScreen extends ChangeListener implements Screen {
         movement = new TextButton("Movement", skin);
         table.add(movement);
         table.row();
+        runningMan = new TextButton("Running Man", skin);
+        table.add(runningMan);
+        table.row();
+        explosion = new TextButton("Explosion", skin);
+        table.add(explosion);
+        table.row();
+        particles = new TextButton("Particles", skin);
+        table.add(particles);
+        table.row();
+
 
         basicScreen.addListener(this);
         simpleImage.addListener(this);
@@ -159,6 +178,52 @@ public class MenuScreen extends ChangeListener implements Screen {
         bottles.addListener(this);
         ships.addListener(this);
         movement.addListener(this);
+        runningMan.addListener(this);
+        explosion.addListener(this);
+        particles.addListener(this);
         return table;
+    }
+
+    @Override
+    public boolean keyDown(int keycode) {
+        if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
+            Gdx.app.exit();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyTyped(char character) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        return false;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        return false;
+    }
+
+    @Override
+    public boolean scrolled(int amount) {
+        return false;
     }
 }
